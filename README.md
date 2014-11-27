@@ -3,9 +3,6 @@ Ambience
 
 <h6>The Simplest Audio Player Library for Android</h6>
 
-<h3>Version</h3>
-<p>Current Version == v1.3</p>
-
 <h3>Introduction</h3>
 <p>Ambience is a small and powerful android library that helps you build advanced audio apps in minutes. 
 Built upon many of android's system components and powerful open source libraries, Ambience is fast, efficient and easy to use.</p>
@@ -61,6 +58,9 @@ Ambience will continue to play audio even when the app is placed in the backgrou
 <p><strong>AmbientListener</strong> - A callback interface that is triggered when an event has occurred in the AmbientService.</p>
 
 <br />
+
+<h3>Version</h3>
+<p>Current Version == v1.3</p>
 
 <h2>Contribute</h2>
 <p>Before submitting a request, please make sure that your code runs on an android device.</p>
