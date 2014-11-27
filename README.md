@@ -61,7 +61,7 @@ Ambience will continue to play audio even when the app is placed in the backgrou
 
 <h3>Version</h3>
 <p>Current Version == v1.3</p>
-
+<br />
 <h2>Contribute</h2>
 <p>Before submitting a request, please make sure that your code runs on an android device.</p>
 
