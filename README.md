@@ -17,7 +17,7 @@ Ambience will continue to play audio even when the app is placed in the backgrou
 <h3>Features</h3>
 
 <h5>Playback Controls</h5>
-<p>Customize and play any playlist with just one line of code. Play, Skip, Forward, Rewind, Pause and Volume Control are just a few of the play back controls that Ambience provides.</p>
+<p>Customize and play any playlist with just one line of code. Play, Skip, Forward, Rewind, Pause and Volume Control are just a few of the playback controls that Ambience provides.</p>
 
 <pre>Ambience.activeInstance()
         .shuffleAndSetPlaylistTo(playlist)
@@ -39,7 +39,7 @@ Ambience will continue to play audio even when the app is placed in the backgrou
 <pre>Ambience.activeInstance() .listenForUpdatesWith(AmbientListener);</pre>
 
 <h5>AmbientTrack</h5>
-<p>Store track meta data with the AmbientTrack class. The AmbientTrack class extends on the Android's Parcelable class. This allows an AmbientTrack to be easily integrated or shared between projects.</p>
+<p>Store track meta data with the AmbientTrack class. The AmbientTrack class extends on the android's Parcelable class. This allows an AmbientTrack to be easily integrated or shared between projects.</p>
 
 <pre>public void bindView(View view, Parcelable object) {
     AmbientTrack track = (AmbientTrack) object;
@@ -61,6 +61,10 @@ Ambience will continue to play audio even when the app is placed in the backgrou
 
 <h3>Version</h3>
 <p>Current Version == v1.3</p>
+<br />
+
+<h3>Sample Code</h3>
+<p>Get the sample code <a href="https://github.com/tonyostudios/AmbienceSampleCode">here</a>.</p>
 <br />
 <h2>Contribute</h2>
 <p>Before submitting a request, please make sure that your code runs on an android device.</p>
