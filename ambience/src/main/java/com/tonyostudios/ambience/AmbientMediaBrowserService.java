@@ -1,16 +1,3 @@
-/*
- * Copyright (C) 2014 TonyoStudios
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
- */
 package com.tonyostudios.ambience;
 
 
@@ -53,7 +40,7 @@ import java.util.List;
  * types like play,pause,stop,resume,previous,skip, shuffle and repeat. The
  * Service also creates A notification in the Notification Drawer to control playback.
  * Use the Ambience Class to communicate with the AmbientService
- * @author TonyoStudios.com. Created on 11/18/2014
+ * @author TonyoStudios.com. Created on 11/18/2014. Updated on 12/01/2014.
  * @version 1.3
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -83,12 +70,12 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
     private MediaPlayer mPlayer;
 
     /**
-     * Handler used to comunicate updates to the UI thread
+     * Handler used to communicate updates to the UI thread
      */
     private Handler mHandler;
 
     /**
-     * Allows service to keep the widi-radio on when needed
+     * Allows service to keep the wifi-radio on when needed
      */
     private WifiManager.WifiLock mWifiLock;
 
@@ -98,7 +85,7 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
     private AudioManager mAudioManager;
 
     /**
-     * ArrayList used to hold the original playlist before mPlayist is shuffled
+     * ArrayList used to hold the original playlist before mPlaylist is shuffled
      */
     private ArrayList<AmbientTrack> mOriginalPlaylist;
 
@@ -118,13 +105,13 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
     private int playPosition = 0;
 
     /**
-     * Contains the packagename and activityname to launch when a notification is tapped
-     * in the navigation drawer.
+     * Holds the intent filter action name used to launch an activity when a now playing card
+     * is clicked on.
      */
-    private String[] mActivityLauncher;
+    private String mActivityLauncher;
 
     /**
-     * The bundle passed to the IncomingRequestReciever. This bundle may contain
+     * The bundle passed to the IncomingRequestReceiver. This bundle may contain
      * data or actions requested by the Ambience Class
      */
     private Bundle mBundle;
@@ -148,7 +135,7 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
 
 
     /**
-     * Method used to bind a service to an Android COmponent such as an activity
+     * Method used to bind a service to an Android Component such as an activity
      * @param intent intent object
      * @return binder object
      * @see  "http://developer.android.com/guide/components/bound-services.html"
@@ -164,7 +151,7 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
      * representing the start request. The Ambient Service is sticky by default.
      * @param intent The Intent supplied to startService(Intent), as given.
      * @param flags  Additional data about the request
-     * @param startId  A unique intefer represting this specific request to start.
+     * @param startId  A unique integer representing this specific request to start.
      * @return The return value indicates what semantics the system should use for the service's
      * current started state.
      */
@@ -197,7 +184,7 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
 
             if(mBundle.containsKey(AmbientService.ACTIVITY_LAUNCHER))
             {
-                mActivityLauncher = mBundle.getStringArray(AmbientService.ACTIVITY_LAUNCHER);
+                mActivityLauncher = mBundle.getString(AmbientService.ACTIVITY_LAUNCHER);
                 updateCardLaunchActivity();
             }
 
@@ -218,27 +205,12 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
 
             if(mBundle.containsKey(AmbientService.REMOVE_TRACK))
             {
-                if(mBundle.getParcelable(AmbientService.REMOVE_TRACK) != null && mOriginalPlaylist != null
-                        && mPlaylist != null)
-                {
-                    mOriginalPlaylist.remove((AmbientTrack)mBundle.getParcelable(AmbientService.REMOVE_TRACK));
-                    mPlaylist.remove((AmbientTrack)mBundle.getParcelable(AmbientService.REMOVE_TRACK));
-                }
+                removeTrackFromPlaylist();
             }
 
             if(mBundle.containsKey(AmbientService.ADD_TRACK))
             {
-                if(mBundle.getParcelable(AmbientService.ADD_TRACK) != null && mOriginalPlaylist != null
-                        && mPlaylist != null)
-                {
-                    mOriginalPlaylist.add((AmbientTrack)mBundle.getParcelable(AmbientService.ADD_TRACK));
-                    mPlaylist.add((AmbientTrack)mBundle.getParcelable(AmbientService.ADD_TRACK));
-
-                    if(mShuffleState == AmbientService.ShuffleMode.ON && !mBundle.containsKey(AmbientService.SHUFFLE_MODE))
-                    {
-                        toggleShuffle(); //If shuffle is on reshuffle track
-                    }
-                }
+                addTrackToPlaylist();
             }
 
             if(mBundle.containsKey(AmbientService.REPEAT_MODE))
@@ -338,6 +310,51 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
 
     }
 
+
+    /**
+     * Method used to bundle the Ambient Service current information
+     * @return A bundle containing the ambientService current playing track,
+     * playlist, shuffle mode, repeat mode, volume level and action launcher string
+     *
+     */
+    private Bundle buildAmbientServiceBundle()
+    {
+        Bundle bundle = new Bundle();
+
+        if(mActivityLauncher != null)
+        {
+            bundle.putString(AmbientService.ACTIVITY_LAUNCHER,mActivityLauncher);
+        }
+
+        if(mAmbientTrack != null)
+        {
+            bundle.putParcelable(AmbientService.CURRENT_TRACK,mAmbientTrack);
+        }
+
+
+        if(mRepeatMode != null)
+        {
+            bundle.putSerializable(AmbientService.REPEAT_MODE,mRepeatMode);
+        }
+
+        if(mShuffleState != null)
+        {
+            bundle.putSerializable(AmbientService.SHUFFLE_MODE,mShuffleState);
+        }
+
+        if(mPlaylist != null)
+        {
+            bundle.putParcelableArrayList(AmbientService.PLAYLIST,mPlaylist);
+        }
+
+
+        bundle.putInt(AmbientService.PLAY_POSITION,playPosition);
+
+        bundle.putFloat(AmbientService.VOLUME_LEVEL,mVolume);
+
+        return bundle;
+    }
+
     /**
      * Called to set the launch activity of th Now Playing Card on AndroidTV
      */
@@ -346,9 +363,10 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
         Intent intent = new Intent();
 
         //Set activity to launch from notification drawer
-        if(mActivityLauncher != null && mActivityLauncher[0] != null && mActivityLauncher[1] !=null)
+        if(mActivityLauncher != null)
         {
-            intent.setClassName(mActivityLauncher[0],mActivityLauncher[1]);
+            intent.setAction(mActivityLauncher);
+            intent.putExtras(buildAmbientServiceBundle());
         }
 
         PendingIntent pi = PendingIntent.getActivity(this, 99 /*request code*/,
@@ -387,7 +405,7 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
     }
 
     /**
-     * Method used to added the passed AmbientPlayist to the queue
+     * Method used to added the passed AmbientPlaylist to the queue
      */
     private void createPlaylist()
     {
@@ -412,7 +430,7 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
         mPlaylist = mBundle.getParcelableArrayList(AmbientService.PLAYLIST);
 
 
-        //Copy position to maintain shuffle & unshuffle state
+        //Copy position to maintain shuffle & un-shuffle state
         for(int x = 0; x < mPlaylist.size(); x++)
         {
             mOriginalPlaylist.add(mPlaylist.get(x));
@@ -420,6 +438,37 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
 
         playPosition = 0;
 
+    }
+
+    /**
+     * Called to remove a track from the current playlist
+     */
+    private void removeTrackFromPlaylist()
+    {
+        if(mBundle.getParcelable(AmbientService.REMOVE_TRACK) != null && mOriginalPlaylist != null
+                && mPlaylist != null)
+        {
+            mOriginalPlaylist.remove((AmbientTrack)mBundle.getParcelable(AmbientService.REMOVE_TRACK));
+            mPlaylist.remove((AmbientTrack)mBundle.getParcelable(AmbientService.REMOVE_TRACK));
+        }
+    }
+
+    /**
+     * Called to append a track to the current playlist
+     */
+    private void addTrackToPlaylist()
+    {
+        if(mBundle.getParcelable(AmbientService.ADD_TRACK) != null && mOriginalPlaylist != null
+                && mPlaylist != null)
+        {
+            mOriginalPlaylist.add((AmbientTrack)mBundle.getParcelable(AmbientService.ADD_TRACK));
+            mPlaylist.add((AmbientTrack)mBundle.getParcelable(AmbientService.ADD_TRACK));
+
+            if(mShuffleState == AmbientService.ShuffleMode.ON && !mBundle.containsKey(AmbientService.SHUFFLE_MODE))
+            {
+                toggleShuffle(); //If shuffle is on reshuffle track
+            }
+        }
     }
 
     /**
@@ -811,9 +860,6 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
             }else if(mRepeatMode == AmbientService.RepeatMode.REPEAT_ONE)
             {
                 play();
-            }else
-            {
-                sendUpdateBroadcast(AmbientService.PlaybackState.END_OF_PLAYLIST);
             }
         }
 

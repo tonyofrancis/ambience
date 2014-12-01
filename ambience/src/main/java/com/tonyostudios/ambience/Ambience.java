@@ -1,18 +1,3 @@
-/*
- * Copyright (C) 2014 TonyoStudios
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
- */
-
-
 package com.tonyostudios.ambience;
 
 import android.app.UiModeManager;
@@ -32,7 +17,7 @@ import java.util.Arrays;
  * registered and used by an Android component (Activity,Fragment or Service) to
  * send and receive update playback control status and information
  * to and from the AmbientService.
- * @author TonyoStudios.com. Created on 11/18/2014
+ * @author TonyoStudios.com. Created on 11/18/2014. Updated on 12/01/2014.
  * @version 1.3
  */
 public class Ambience extends BroadcastReceiver {
@@ -466,19 +451,19 @@ public class Ambience extends BroadcastReceiver {
 
     /**
      * Method used to append a launch activity request to the Ambience notification
-     * @param packageName app package name. eg: com.example.package
-     * @param activityName activity name including app package name. eg: com.example.package.activity
+     * @param intentFilterAction intent Filter Action Name to launch a specific activity. This should
+     *                           be a unique identifier for your activity
      * @return Instance of Ambience
      */
-    public Ambience setNotificationLaunchActivity(String packageName, String activityName)
+    public Ambience setNotificationLaunchActivity(String intentFilterAction)
     {
-        if(packageName == null || activityName == null)
+        if(intentFilterAction == null)
         {
             return mAmbience;
         }
 
         Intent intent = getAmbientServiceIntentInstance();
-        intent.putExtra(AmbientService.ACTIVITY_LAUNCHER,new String[]{packageName,activityName});
+        intent.putExtra(AmbientService.ACTIVITY_LAUNCHER,intentFilterAction);
         sendIntentToAmbientService(intent);
 
         return mAmbience;
