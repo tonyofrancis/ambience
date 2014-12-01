@@ -1,7 +1,7 @@
 Ambience
 ========
 
-<h6>The Simplest Audio Player Library for Android</h6>
+<h6>The Simplest Audio Player Service Library for Android</h6>
 
 <h3>Introduction</h3>
 <p>Ambience is a small and powerful android library that helps you build advanced audio apps in minutes. 
