@@ -36,7 +36,7 @@ Ambience will continue to play audio even when the app is placed in the backgrou
 <h5>Callback Methods</h5>
 <p>Get notified when an event occurs or playback options change via the AmbientListener interface. The AmbientListener provides several callback methods that are triggered for the current playing track or when an event occurs in the service.</p>
 
-<pre>Ambience.activeInstance() .listenForUpdatesWith(AmbientListener);</pre>
+<pre>Ambience.activeInstance().listenForUpdatesWith(AmbientListener);</pre>
 
 <h5>AmbientTrack</h5>
 <p>Store track meta data with the AmbientTrack class. The AmbientTrack class extends on the android's Parcelable class. This allows an AmbientTrack to be easily integrated or shared between projects.</p>
