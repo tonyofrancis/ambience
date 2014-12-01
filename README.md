@@ -30,8 +30,7 @@ Ambience will continue to play audio even when the app is placed in the backgrou
 <p>Ambience creates a custom notification for each track in the playlist. Users can use these notifications to control playback options and jump right back into your app. Notifications created by Ambience will also show up on wearable devices that are connected to the app. For android tv and auto apps, a notification will show as a now playing card in the recommendation section.</p>
 <p>To launch an activity from a notification, pass a unique Intent-Filter action name.</p>
 
-<pre>Ambience.activeInstance()
-.setNotificationLaunchActivity(actionName);</pre>
+<pre>Ambience.activeInstance().setNotificationLaunchActivity(actionName);</pre>
 
 <h5>Callback Methods</h5>
 <p>Get notified when an event occurs or playback options change via the AmbientListener interface. The AmbientListener provides several callback methods that are triggered for the current playing track or when an event occurs in the service.</p>
