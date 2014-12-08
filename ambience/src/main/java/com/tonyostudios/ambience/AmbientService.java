@@ -1045,8 +1045,16 @@ public class AmbientService extends Service implements MediaPlayer.OnErrorListen
         mWifiLock = null;
         mBundle = null;
 
-        mOriginalPlaylist.clear();
-        mPlaylist.clear();
+		if(mOriginalPlaylist != null)
+		{
+			mOriginalPlaylist.clear();
+		}
+		
+		if(mPlaylist != null)
+		{
+			mPlaylist.clear();
+		}
+		
         mPlaylist = null;
         mOriginalPlaylist = null;
         mActivityLauncher = null;
