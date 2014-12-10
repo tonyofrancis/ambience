@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.os.PowerManager;
 import android.os.ResultReceiver;
 import android.service.media.MediaBrowserService;
@@ -87,12 +88,12 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
     /**
      * ArrayList used to hold the original playlist before mPlaylist is shuffled
      */
-    private ArrayList<AmbientTrack> mOriginalPlaylist;
+    private ArrayList<AmbientTrack> mOriginalPlaylist = new ArrayList<AmbientTrack>();
 
     /**
      * ArrayList used to manage AmbientTracks sent to the AmbientService for processing
      */
-    private ArrayList<AmbientTrack> mPlaylist;
+    private ArrayList<AmbientTrack> mPlaylist = new ArrayList<AmbientTrack>();
 
     /**
      * Holds the current playing AmbientTrack
@@ -424,11 +425,18 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
             mOriginalPlaylist = new ArrayList<AmbientTrack>();
         }
 
+        if(mPlaylist == null)
+        {
+            mPlaylist = new ArrayList<AmbientTrack>();
+        }
 
-        mPlaylist = null;
 
-        mPlaylist = mBundle.getParcelableArrayList(AmbientService.PLAYLIST);
+        ArrayList<Parcelable> newTracks =  mBundle.getParcelableArrayList(AmbientService.PLAYLIST);
 
+        for(int j = 0; j < newTracks.size(); j++)
+        {
+            mPlaylist.add((AmbientTrack)newTracks.get(j));
+        }
 
         //Copy position to maintain shuffle & un-shuffle state
         for(int x = 0; x < mPlaylist.size(); x++)
@@ -593,6 +601,11 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
                 // Lost focus for an unbounded amount of time: stop playback and release media player
                 if (mPlayer.isPlaying())
                 {
+                    if(mSession != null && !mSession.isActive())
+                    {
+                        mSession.setActive(false);
+                    }
+
                     pause();
                 }
 
@@ -737,6 +750,8 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
         try
         {
             mAudioManager.abandonAudioFocus(this);
+            mWifiLock.release();
+
 
             if(mPlayer != null && mPlayer.isPlaying())
             {

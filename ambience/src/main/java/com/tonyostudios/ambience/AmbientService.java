@@ -15,6 +15,7 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.os.PowerManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -195,12 +196,12 @@ public class AmbientService extends Service implements MediaPlayer.OnErrorListen
     /**
      * ArrayList used to hold the original playlist before mPlaylist is shuffled
      */
-    private ArrayList<AmbientTrack> mOriginalPlaylist;
+    private ArrayList<AmbientTrack> mOriginalPlaylist = new ArrayList<AmbientTrack>();
 
     /**
      * ArrayList used to manage AmbientTracks sent to the AmbientService for processing
      */
-    private ArrayList<AmbientTrack> mPlaylist;
+    private ArrayList<AmbientTrack> mPlaylist = new ArrayList<AmbientTrack>();
 
     /**
      * Holds the current playing AmbientTrack
@@ -444,9 +445,17 @@ public class AmbientService extends Service implements MediaPlayer.OnErrorListen
         }
 
 
-        mPlaylist = null;
+        if(mPlaylist == null)
+        {
+            mPlaylist = new ArrayList<AmbientTrack>();
+        }
 
-        mPlaylist = mBundle.getParcelableArrayList(PLAYLIST);
+        ArrayList<Parcelable> newTracks =  mBundle.getParcelableArrayList(PLAYLIST);
+
+        for(int j = 0; j < newTracks.size(); j++)
+        {
+            mPlaylist.add((AmbientTrack)newTracks.get(j));
+        }
 
 
         //Copy position to maintain shuffle & un-shuffle state
@@ -746,6 +755,7 @@ public class AmbientService extends Service implements MediaPlayer.OnErrorListen
         try
         {
             mAudioManager.abandonAudioFocus(this);
+            mWifiLock.release();
 
             if(mPlayer != null && mPlayer.isPlaying())
             {
