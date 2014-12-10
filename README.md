@@ -59,7 +59,7 @@ Ambience will continue to play audio even when the app is placed in the backgrou
 <br />
 
 <h3>Version</h3>
-<p>Current Version == v1.3</p>
+<p>Current Version == v1.5</p>
 <p>Visit the <a href="http://www.tonyostudios.com/ambience" target="_blank">Ambience Website</a> for more information.</p>
 <br />
 
