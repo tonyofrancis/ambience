@@ -16,6 +16,7 @@ import android.media.MediaPlayer;
 import android.media.Rating;
 import android.media.browse.MediaBrowser;
 import android.media.session.MediaSession;
+import android.media.session.PlaybackState;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import android.os.PowerManager;
 import android.os.ResultReceiver;
 import android.service.media.MediaBrowserService;
 import android.util.Log;
+import android.view.KeyEvent;
 
 
 import com.squareup.picasso.Picasso;
@@ -63,7 +65,7 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
     /**
      * Holds the Media Session state value
      */
-    private int mState;
+    private long mState = PlaybackState.STATE_NONE;
 
     /**
      * Media player used by the service to play AmbientTracks
@@ -694,14 +696,19 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
             if(mPlayer != null)
             {
                 mPlayer.start();
+                mState = PlaybackState.ACTION_PLAY;
             }
 
-            if(mSession != null && !mSession.isActive())
+            if(mSession != null)
             {
-                mSession.setActive(true);
+                mSession.setPlaybackState(getPlaybackState());
+
+                if(!mSession.isActive())
+                {
+                    mSession.setActive(true);
+                }
             }
 
-            updatePlaybackState();
             metadataBitmapHelper();
 
             if(mHandler != null)
@@ -730,9 +737,13 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
             if(mPlayer != null && mPlayer.isPlaying())
             {
                 mPlayer.stop();
+                mState = PlaybackState.ACTION_STOP;
             }
 
-            updatePlaybackState();
+            if(mSession != null)
+            {
+                mSession.setPlaybackState(getPlaybackState());
+            }
 
             sendUpdateBroadcast(AmbientService.PlaybackState.STOP); // sends a track has stopped update to the callback
         }catch (Exception e)
@@ -756,9 +767,13 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
             if(mPlayer != null && mPlayer.isPlaying())
             {
                 mPlayer.pause();
+                mState = PlaybackState.ACTION_PAUSE;
             }
 
-            updatePlaybackState();
+            if(mSession != null)
+            {
+                mSession.setPlaybackState(getPlaybackState());
+            }
 
             sendUpdateBroadcast(AmbientService.PlaybackState.PAUSE); // sends a track has paused update to the callback
         }catch (Exception e)
@@ -773,6 +788,8 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
      */
     private void playPrevious()
     {
+        mState = PlaybackState.ACTION_SKIP_TO_PREVIOUS;
+
         if(mPlayer != null && mPlayer.isPlaying())
         {
             stop();
@@ -796,6 +813,8 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
      */
     private void playNext()
     {
+        mState = PlaybackState.ACTION_SKIP_TO_NEXT;
+
         if(mPlayer != null && mPlayer.isPlaying())
         {
             stop();
@@ -1074,8 +1093,8 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
     /**
      * Called to get the playback state of the media player. This method updates the media session
      */
-    private void updatePlaybackState() {
-
+    private PlaybackState getPlaybackState()
+    {
         long position = android.media.session.PlaybackState.PLAYBACK_POSITION_UNKNOWN;
 
         if (mPlayer != null && mPlayer.isPlaying()) {
@@ -1083,12 +1102,13 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
         }
         android.media.session.PlaybackState.Builder stateBuilder = new android.media.session.PlaybackState.Builder()
                 .setActions(getAvailableActions());
-        stateBuilder.setState(mState, position, 1.0f);
-        mSession.setPlaybackState(stateBuilder.build());
+        stateBuilder.setState((int)mState, position, 1.0f);
+
+        return stateBuilder.build();
     }
 
     /**
-     * Called to get the available actions for the now playing card on AndroidTV
+     * Called to get the available actions for the now playing card
      * @return actions value
      */
     private long getAvailableActions() {
@@ -1239,7 +1259,10 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
         @Override
         public void onCommand(String command, Bundle args, ResultReceiver cb) {
             super.onCommand(command, args, cb);
+
         }
+
+
 
         /**
          * Called when a media button is pressed and this session has the highest priority or a
@@ -1250,8 +1273,76 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
          */
         @Override
         public boolean onMediaButtonEvent(Intent mediaButtonIntent) {
-            //not implemented
-            return super.onMediaButtonEvent(mediaButtonIntent);
+
+            if (mSession != null
+                    && Intent.ACTION_MEDIA_BUTTON.equals(mediaButtonIntent.getAction())) {
+                KeyEvent ke = mediaButtonIntent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                if (ke != null && ke.getAction() == KeyEvent.ACTION_DOWN) {
+                    PlaybackState state = getPlaybackState();
+                    long validActions = state == null ? 0 : state.getActions();
+                    switch (ke.getKeyCode()) {
+                        case KeyEvent.KEYCODE_MEDIA_PLAY:
+                            if ((validActions & PlaybackState.ACTION_PLAY) != 0) {
+                                onPlay();
+                                return true;
+                            }
+                            break;
+                        case KeyEvent.KEYCODE_MEDIA_PAUSE:
+                            if ((validActions & PlaybackState.ACTION_PAUSE) != 0) {
+                                onPause();
+                                return true;
+                            }
+                            break;
+                        case KeyEvent.KEYCODE_MEDIA_NEXT:
+                            if ((validActions & PlaybackState.ACTION_SKIP_TO_NEXT) != 0) {
+                                onSkipToNext();
+                                return true;
+                            }
+                            break;
+                        case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+                            if ((validActions & PlaybackState.ACTION_SKIP_TO_PREVIOUS) != 0) {
+                                onSkipToPrevious();
+                                return true;
+                            }
+                            break;
+                        case KeyEvent.KEYCODE_MEDIA_STOP:
+                            if ((validActions & PlaybackState.ACTION_STOP) != 0) {
+                                onStop();
+                                return true;
+                            }
+                            break;
+                        case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+                            if ((validActions & PlaybackState.ACTION_FAST_FORWARD) != 0) {
+                                onFastForward();
+                                return true;
+                            }
+                            break;
+                        case KeyEvent.KEYCODE_MEDIA_REWIND:
+                            if ((validActions & PlaybackState.ACTION_REWIND) != 0) {
+                                onRewind();
+                                return true;
+                            }
+                            break;
+                        case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                        case KeyEvent.KEYCODE_HEADSETHOOK:
+                            boolean isPlaying = state == null ? false
+                                    : state.getState() == PlaybackState.STATE_PLAYING;
+                            boolean canPlay = (validActions & (PlaybackState.ACTION_PLAY_PAUSE
+                                    | PlaybackState.ACTION_PLAY)) != 0;
+                            boolean canPause = (validActions & (PlaybackState.ACTION_PLAY_PAUSE
+                                    | PlaybackState.ACTION_PAUSE)) != 0;
+                            if (isPlaying && canPause) {
+                                onPause();
+                                return true;
+                            } else if (!isPlaying && canPlay) {
+                                onPlay();
+                                return true;
+                            }
+                            break;
+                    }
+                }
+            }
+            return false;
         }
 
         /**
