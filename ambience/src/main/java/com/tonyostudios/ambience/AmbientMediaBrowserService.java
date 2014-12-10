@@ -601,7 +601,7 @@ public class AmbientMediaBrowserService extends MediaBrowserService implements M
                 // Lost focus for an unbounded amount of time: stop playback and release media player
                 if (mPlayer.isPlaying())
                 {
-                    if(mSession != null && !mSession.isActive())
+                    if(mSession != null && mSession.isActive())
                     {
                         mSession.setActive(false);
                     }
