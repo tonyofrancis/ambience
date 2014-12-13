@@ -187,12 +187,13 @@ public class Ambience extends BroadcastReceiver {
             if(isAndroidTvOrCar())
             {
                 mContext.startService(new Intent(mContext, AmbientMediaBrowserService.class));
-
+                isAmbientServiceStarted = true;
                 return;
             }
 
 
             mContext.startService(new Intent(mContext, AmbientService.class));
+            isAmbientServiceStarted = true;
         }
     }
 
@@ -206,11 +207,13 @@ public class Ambience extends BroadcastReceiver {
             if(isAndroidTvOrCar())
             {
                 mContext.stopService(new Intent(mContext, AmbientMediaBrowserService.class));
+                isAmbientServiceStarted = false;
 
                 return;
             }
 
             mContext.stopService(new Intent(mContext, AmbientService.class));
+            isAmbientServiceStarted = false;
         }
     }
 
