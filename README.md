@@ -1,4 +1,4 @@
-Ambience
+Ambience (DEPRECATED)
 ========
 
 <h6>The Simplest Audio Player Service Library for Android</h6>
